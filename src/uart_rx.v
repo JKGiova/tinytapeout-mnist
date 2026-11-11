@@ -1,7 +1,7 @@
 module uart_rx (
     input wire clk, rst_n, rx,
-    output reg [7:0] data_out,
-    output reg data_ready
+    output reg [7:0] byte_out,
+    output reg byte_ready
 );
 
     reg [10:0] counter;
@@ -18,20 +18,20 @@ module uart_rx (
     always @(posedge clk or negedge rst_n) begin
 
         if (!rst_n) begin
-            data_ready <= 0;
+            byte_ready <= 0;
             rx_sync_a <= 1;
             rx_sync_b <= 1;
             state <= IDLE;
             counter <= 11'd0;
             bit_index <= 3'd0;
             received_byte <= 8'd0;
-            data_out <= 8'd0;
+            byte_out <= 8'd0;
 
         end else begin 
 
             rx_sync_b <= rx_sync_a;
             rx_sync_a <= rx;
-            data_ready <= 0;
+            byte_ready <= 0;
 
             case (state)
                 IDLE: begin 
@@ -69,8 +69,8 @@ module uart_rx (
                 STOP: begin 
                     if (counter == 11'd1151) begin
                         if (rx_sync_b == 1) begin
-                            data_out <= received_byte;
-                            data_ready <= 1;
+                            byte_out <= received_byte;
+                            byte_ready <= 1;
                         end
                         state <= IDLE;
                     end else begin

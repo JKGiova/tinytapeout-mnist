@@ -5,8 +5,8 @@ module tb_uart_rx;
     reg clk = 0;
     reg rst_n = 0;
     reg rx = 1;
-    wire data_ready;
-    wire [7:0] data_out;
+    wire byte_ready;
+    wire [7:0] byte_out;
 
     reg [7:0] expected [0:49];
     reg previous_ready = 0;
@@ -20,8 +20,8 @@ module tb_uart_rx;
         .clk(clk),
         .rst_n(rst_n),
         .rx(rx),
-        .data_ready(data_ready),
-        .data_out(data_out)
+        .byte_ready(byte_ready),
+        .byte_out(byte_out)
     );
 
     always #5 clk = ~clk;
@@ -30,23 +30,23 @@ module tb_uart_rx;
         if (!rst_n) begin
             previous_ready = 0;
         end else begin
-            if (data_ready && previous_ready) begin
-                $fatal(1, "data_ready alto per piu di un ciclo");
+            if (byte_ready && previous_ready) begin
+                $fatal(1, "byte_ready alto per piu di un ciclo");
             end
 
-            if (data_ready) begin
+            if (byte_ready) begin
                 if (received_count >= byte_count) begin
-                    $fatal(1, "Byte inatteso: %h", data_out);
+                    $fatal(1, "Byte inatteso: %h", byte_out);
                 end
-                if (data_out !== expected[received_count]) begin
+                if (byte_out !== expected[received_count]) begin
                     $fatal(1, "Byte %0d: atteso %h, ricevuto %h",
-                           received_count, expected[received_count], data_out);
+                           received_count, expected[received_count], byte_out);
                 end
-                $display("Byte %0d corretto: %h", received_count, data_out);
+                $display("Byte %0d corretto: %h", received_count, byte_out);
                 received_count = received_count + 1;
             end
 
-            previous_ready = data_ready;
+            previous_ready = byte_ready;
         end
     end
 
